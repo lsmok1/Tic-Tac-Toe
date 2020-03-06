@@ -1,6 +1,8 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class TicTacToe {
+    static ArrayList<Integer> playerPositions = new ArrayList<>();
+    static ArrayList<Integer> cpuPositions = new ArrayList<>();
     public static void main (String[] args) {
         //initializing the gameboard
         char[][] gameBoard = {{' ', '|', ' ', '|', ' '},
@@ -14,11 +16,51 @@ public class TicTacToe {
         Scanner scan = new Scanner(System.in);
         System.out.println("Would you like to be X or O?");
         char user = scan.nextLine().charAt(0);
-        System.out.println("Your move! (1-9): ");
-        int pos = scan.nextInt();
-        //placepiece by taking in the initial char[][], getting the pos from scanner, and getting the user from scanner
-        placePiece(gameBoard, pos, user);
-        printGameBoard(gameBoard);
+        char cpu = ' ';
+        if (user == 'x') {
+            cpu = 'y';
+        } else {
+            cpu = 'x';
+        }
+        // while (true) loops code indefinitely
+        while (true) {
+            scan = new Scanner(System.in);
+            System.out.println("Your move! (1-9): ");
+            int pos = scan.nextInt();
+            //checking if the pos you entered is already in the array list or
+            // if you are trying to take a position taken by the computer already
+            while(playerPositions.contains(pos) || cpuPositions.contains(playerPositions)) {
+                System.out.println("Position is already taken... Enter another position: ");
+                pos = scan.nextInt();
+            }
+            //placepiece by taking in the initial char[][], getting the int pos from scanner, and getting the char user from scanner
+            placePiece(gameBoard, pos, user);
+            //checking the result after you place a piece
+            String result = winnerWinnerChickenDinner();
+            //checking if there even is a result after every time you place a piece
+            if (result.length()>0) {
+                System.out.println(result);
+                break;
+            }
+
+
+            Random rand = new Random();
+            int cpuPos = rand.nextInt(9) + 1;
+            placePiece(gameBoard, cpuPos, cpu);
+            //checking if the number the computer generated is already taken by you or if the computer already generated that position
+            while(playerPositions.contains(cpuPos) || cpuPositions.contains(cpuPos)) {
+                cpuPos = rand.nextInt(9) + 1;
+            }
+
+            printGameBoard(gameBoard);
+            //checking result after cpu places a piece
+            result = winnerWinnerChickenDinner();
+            //checking if there is a result or just an empty string
+            if (result.length()>0) {
+                System.out.println(result);
+                break;
+            }
+        }
     }
     public static void printGameBoard(char[][] gameBoard){
         //for each row in the gameboard
@@ -37,8 +79,12 @@ public class TicTacToe {
         //checking if the person chose x or not
         if(user == 'x') {
             symbol = 'X';
-        } else {
+            playerPositions.add(pos);
+        } else if (user == 'o') {
             symbol = 'O';
+            playerPositions.add(pos);
+        } else {
+            cpuPositions.add(pos);
         }
         switch (pos) {
             case 1:
@@ -71,5 +117,37 @@ public class TicTacToe {
             default:
                 break;
         }
+    }
+    public static String winnerWinnerChickenDinner(){
+        List topRow = Arrays.asList(1, 2, 3);
+        List midRow = Arrays.asList(4, 5, 6);
+        List botRow = Arrays.asList(7, 8, 9);
+        //list goes from left to right so have to make them top to bottom
+        List leftCol = Arrays.asList(1, 4, 7);
+        List midCol = Arrays.asList(2, 5, 8);
+        List rightCol = Arrays.asList(3, 6, 9);
+        //same for diagonals
+        List leftRightDia = Arrays.asList(1, 5, 9);
+        List rightLeftDia = Arrays.asList(3, 5, 7);
+        //List of a list... adding lists above to wincon list
+        List<List> winCon = new ArrayList<List>();
+        winCon.add(topRow);
+        winCon.add(midRow);
+        winCon.add(botRow);
+        winCon.add(leftCol);
+        winCon.add(midCol);
+        winCon.add(rightCol);
+        winCon.add(leftRightDia);
+        winCon.add(rightLeftDia);
+        for (List l : winCon) {
+            if (playerPositions.containsAll(l)) {
+                return "You won!";
+            } else if (cpuPositions.containsAll(l)) {
+                return "A computer that randomly generates numbers won...";
+            } else if (playerPositions.size() + cpuPositions.size() == 9){
+                return "Tie";
+            }
+        }
+        return "";
     }
 }
